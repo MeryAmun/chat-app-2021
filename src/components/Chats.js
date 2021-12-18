@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { ChatEngine } from 'react-chat-engine'
 import { auth } from '../firebase'
@@ -30,37 +30,39 @@ const Chats = () => {
     axios
       .get('https://api.chatengine.io/users/me', {
         headers: {
-          'project-id': '3c2a391c-c007-43a9-b966-c4c832fb7798',
+          'project-id': process.env.REACT_APP_CHAT_ENGINE_ID,
           'user-name': user.email,
           'user-secret': user.uid,
         },
       })
+
       .then(() => {
         setLoading(false)
       })
       .catch(() => {
-        let formData = new formData()
-        formData.append('email', user.email)
-        formData.append('username', user.displayName)
-        formData.append('secret', user.uid)
+        let formdata = new FormData()
+        formdata.append('email', user.email)
+        formdata.append('username', user.email)
+        formdata.append('secret', user.uid)
 
-        getFile(user.photoUrl).then((avatar) => {
-          formData.append('avatar', avatar, avatar.name)
+        getFile(user.photoURL).then((avatar) => {
+          formdata.append('avatar', avatar, avatar.name)
           axios
-            .post('https://api.chatengine.io/users', formData, {
+            .post('https://api.chatengine.io/users/', formdata, {
               headers: {
-                'private-key': '2f04bf2b-7748-4b4b-80c0-f7a37a24ee27',
+                'private-key': process.env.REACT_APP_CHAT_ENGINE_PRIVATE_KEY,
               },
             })
             .then(() => {
               setLoading(false)
             })
             .catch((err) => {
-              console.log(err)
+              console.log(err.message)
             })
         })
       })
   }, [user, history])
+  if (!user || loading) return 'Loading...'
 
   return (
     <div className='chats-page'>
@@ -72,7 +74,7 @@ const Chats = () => {
       </div>
       <ChatEngine
         height='calc(100vh-66px)'
-        projectId='3c2a391c-c007-43a9-b966-c4c832fb7798'
+        projectID={process.env.REACT_APP_CHAT_ENGINE_ID}
         userName={user.email}
         userSecret={user.uid}
       />
